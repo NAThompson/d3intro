@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="d3.v4.min.js"></script>
+<style>
+body {
+  background-color: black;
+  color: white;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: white;
+  shape-rendering: crispEdges;
+}
+.axis text {
+    font-family: sans-serif;
+    font-size: 10px;
+    stroke: white;
+}
+</style>
+</head>
+<body>
+<script>
+
+let dataset = [];
+const a = 3;
+const b = 2;
+const delta = Math.PI/2;
+const stepsize = 0.01;
+const xmin = -Math.PI;
+let x = 0;
+while (x < 2*Math.PI) {
+    dataset.push([Math.sin(a*x+delta), Math.sin(b*x)]);
+    x += stepsize;
+}
+
+const svg = d3.select("body")
+            .append("svg")
+            .attr("width",  window.innerWidth)
+            .attr("height",  window.innerHeight);
+
+const margin = {top: 30, right: 40, bottom: 30, left: 30};
+const width = +svg.attr("width") - margin.left - margin.right;
+const height = +svg.attr("height") - margin.top - margin.bottom;
+// We need an SVG group because we otherwise our data range depends on the margin.
+const g = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+const xextents = d3.extent(dataset, d => d[0]);
+
+const xScale = d3.scaleLinear()
+               .domain(xextents)
+               .range([0, width]);
+
+const yextents = d3.extent(dataset, d => d[1]);
+const yScale = d3.scaleLinear()
+               .domain(yextents)
+               .range([height, 0]);
+
+const xAxis = d3.axisBottom(xScale)
+                .ticks(8)
+                .tickSize(-height)
+                .tickSizeOuter(0);
+
+const yAxis = d3.axisLeft(yScale).ticks(10).tickSize(-width).tickSizeOuter(0);
+
+const line = d3.line().curve(d3.curveCatmullRomClosed)
+               .x( d => xScale(d[0]))
+               .y( d => yScale(d[1]));
+
+g.append("path").datum(dataset)
+ .attr("fill", "none")
+ .attr("stroke", "steelblue")
+ .attr("d", line);
+
+g.append("g")
+   .attr("class", "axis")
+   .attr("transform", `translate(0, ${height})`)
+   .attr("opacity", 0.15)
+   .call(xAxis);
+
+g.append("g")
+   .attr("class", "axis")
+   .attr("transform", `translate(0, 0)`)
+   .attr("opacity", 0.15)
+   .call(yAxis);
+
+</script>
+</body>
+</html>

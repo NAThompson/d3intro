@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="d3.v4.min.js"></script>
+<style>
+body {
+  background-color: black;
+  color: white;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: white;
+  shape-rendering: crispEdges;
+}
+.axis text {
+    font-family: sans-serif;
+    font-size: 10px;
+    stroke: white;
+}
+</style>
+</head>
+<body>
+<script>
+const xmin = -3;
+const spacing = 0.01;
+let arr1 = [];
+let arr2 = [];
+let arr3 = [];
+for (let i = 0; i < 700; ++i)
+{
+    const x = xmin + i*spacing;
+    const y = Math.tanh(x);
+    //arr1.push(y + 1);
+    //arr2.push(-y - 1);
+    arr3.push(Math.cos(3*x));
+}
+//const dataset = [arr1, arr2, arr3];
+const dataset = [arr3];
+
+const xmax = xmin + spacing*(dataset[0].length - 1);
+const ymin = d3.min(dataset, (array) => d3.min(array));
+const ymax = d3.max(dataset, (array) => d3.max(array));
+
+const svg = d3.select("body")
+            .append("svg")
+            .attr("width",  window.innerWidth)
+            .attr("height",  window.innerHeight);
+
+const margin = {top: 100, right: 40, bottom: 40, left: 40};
+const width = +svg.attr("width") - margin.left - margin.right;
+const height = +svg.attr("height") - margin.top - margin.bottom;
+// We need an SVG group because we otherwise our data range depends on the margin.
+const g = svg.append("g")
+             .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+const xScale = d3.scaleLinear()
+                 .domain([xmin, xmax])
+                 .range([height, 0]);
+
+const yScale = d3.scaleLinear()
+                 .domain([ymin, ymax])
+                 .range([0, width]);
+
+
+const xAxis = d3.axisBottom(yScale)
+                .ticks(8)
+                .tickSize(-height)
+                .tickSizeOuter(0);
+
+const yAxis = d3.axisLeft(xScale).ticks(10).tickSize(-width).tickSizeOuter(0);
+
+const line = d3.line().curve(d3.curveMonotoneX)
+             .x( d => yScale(d) )
+             .y( (d, i) => xScale(xmin + i*spacing) );
+
+g.append("defs")
+ .append("clipPath")
+ .attr("id", "rectangleClipper")
+ .append("rect")
+ .attr("x", 0)
+ .attr("y", 0)
+ .attr("width", width)
+ .attr("height", height);
+
+g.selectAll("path").data(dataset).enter()
+ .append("path")
+ .attr("stroke", "steelblue")
+ .attr("fill", "none")
+ .attr("stroke-width", 5)
+ .attr("class", "line")
+ .attr("clip-path", "url(#rectangleClipper)")
+ .attr("d", line);
+
+g.append("g")
+   .attr("class", "axis")
+   .attr("id", "axis--x")
+   .attr("transform", `translate(0, ${height})`)
+   .attr("opacity", 0.25)
+   .call(xAxis);
+
+g.append("g")
+   .attr("class", "axis")
+   .attr("id", "axis--y")
+   .attr("transform", `translate(0, 0)`)
+   .attr("opacity", 0.25)
+   .call(yAxis);
+
+svg.append("text")
+   .attr("text-anchor", "middle")
+   .attr("fill", "white")
+   .attr("transform", `translate(${margin.left/3}, ${height/2 + margin.top}) rotate(-90)`)
+   .text("y");
+
+svg.append("text")
+   .attr("text-anchor", "middle")
+   .attr("fill", "white")
+   .attr("transform", `translate(${width/2+margin.left}, ${height + margin.top + margin.bottom/2})`)
+   .text("x");
+
+svg.append("text")
+   .attr("text-anchor", "middle")
+   .attr("fill", "white")
+   .attr("transform", `translate(${width/2+margin.left}, ${margin.top/2})`)
+   .text("You can brush!");
+
+const brush = d3.brush()
+                .on("end", brushended)
+                .extent([[0,0], [width, height]]);
+
+g.append("g")
+ .attr("id", "brush")
+ .call(brush);
+
+let idleTimeout = null;
+function brushended() {
+    const s = d3.event.selection;
+    if (!s) {
+        if (!idleTimeout) {
+            return idleTimeout = setTimeout(() => { idleTimeout = null; }, 350);
+        }
+        xScale.domain([xmin, xmax]);
+        yScale.domain([ymin, ymax]);
+    }
+    else {
+        // xScale.invert: takes a pixel location an maps it to a data location.
+        const newxextent = [xScale.invert(s[0][0]), xScale.invert(s[1][0])];
+        xScale.domain(newxextent);
+        const newyextent = [yScale.invert(s[1][1]), yScale.invert(s[0][1])];
+        yScale.domain(newyextent);
+        svg.select("#brush").call(brush.move);
+    }
+    const trans = svg.transition().duration(750);
+    svg.select("#axis--x").transition(trans).call(xAxis);
+    svg.select("#axis--y").transition(trans).call(yAxis);
+    svg.selectAll(".line").transition(trans).attr("d", line);
+};
+
+</script>
+</body>
+</html>

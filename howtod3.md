@@ -32,6 +32,14 @@ Not knowing SVG makes your life miserable when using d3.js.
 
 ---
 
+## d3: Not an abstraction layer
+
+d3 is a code generation layer.
+
+If you want abstraction from SVG, expect to be frustrated.
+
+---
+
 ## SVG basics: Create a circle
 
 ```html
@@ -227,6 +235,7 @@ A popular reference is [SVG Animations](https://www.amazon.com/SVG-Animations-Im
 
 - d3 is for programming; you can do a lot.
 - Learning curve is large.
+- BSD licenced, so you can use it without worry.
 
 
 ---
@@ -421,7 +430,7 @@ const g = svg.append("g");
 const dataset = [ [-2, 4], [-1, 1], [ 0, 0], [ 1, 1], [ 2, 4] ];
 // d3.extent combines d3.min/d3.max
 const xExtents = d3.extent(dataset, d => d[0]);
-const yExtents = d3.extent(dataset, d => d[0]);
+const yExtents = d3.extent(dataset, d => d[1]);
 const xScale = d3.scaleLinear().domain(xExtents).range([0, width]);
 const yScale = d3.scaleLinear().domain(yExtents).range([height, 0]);
 const line = d3.line().curve(d3.curveMonotoneX)
@@ -429,6 +438,154 @@ const line = d3.line().curve(d3.curveMonotoneX)
                .y(d => yScale(d[1]));
 g.append("path").datum(dataset).attr("stroke", "steelblue").attr("d", line);
 ```
+
+---
+
+## d3: Axes
+
+```javascript
+const g = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+const xAxis = d3.axisBottom(xScale).ticks(8);
+const yAxis = d3.axisLeft(yScale).ticks(10);
+g.append("g")
+   .attr("class", "axis")
+   .attr("transform", `translate(0, ${height})`)
+   .call(xAxis);
+```
+
+See `d3/axes.html`.
+
+---
+
+![inline](figures/axes.png)
+
+---
+
+## d3: Gridlines
+
+Gridlines can be constructed by making the ticks the size of the whole `<g>` element.
+
+```javascript
+const xAxis = d3.axisBottom(xScale).ticks(8).tickSize(-height).tickSizeOuter(0);
+const yAxis = d3.axisLeft(yScale).ticks(10).tickSize(-width).tickSizeOuter(0);
+```
+
+Make sure to set the opacity to (say) 0.15:
+
+```javascript
+g.append("g")
+   .attr("class", "axis")
+   .attr("transform", `translate(0, 0)`)
+   .attr("opacity", 0.15)
+   .call(yAxis);
+```
+
+---
+
+![inline](figures/gridlines.png)
+
+---
+
+## d3: Custom axis labels
+
+```javascript
+var xAxis = d3.axisBottom(xscale)
+              .tickValues([-2, -1, 1, 3])
+              .tickFormat( (d) => {
+                switch(d) {
+                    case -2:
+                      return "L1";
+                    case -1:
+                      return "L2";
+                    case 1:
+                      return "L3";
+                    case 3:
+                      return "L4";
+                    default:
+                      throw "Bad value for tick label";
+                }
+              });
+```
+
+---
+
+## d3: transitions
+
+Transitions change the state of an SVG via a continuous transformations.
+
+```javascript
+d3.selectAll("circle").data(dataset).enter()
+  .append("circle")
+  .attr("cx", d => xScale(d[0]))
+  .attr("cy", d => yScale(d[1]))
+  .attr("r", 10)
+  .attr("fill", "steelblue")
+  .on("click", function(d) {
+    d3.select(this).transition()
+      .attr("r", 20).attr("fill", "orange").duration(500);
+  });
+```
+
+See `d3/transitions.html`.
+
+
+---
+
+## d3: brush
+
+- Brushes select an area of a graph and zoom to it.
+
+- See Mike Bostock's [example](https://bl.ocks.org/mbostock/f48fcdb929a620ed97877e4678ab15e6) use of the D3 brush.
+
+- Brushes will be our first our of `clipPath`s, since during a zoom, data exists that is outside the zoom region.
+
+---
+
+## d3: brush
+```javascript
+const brush = d3.brush().on("end", brushended).extent([[0,0], [width, height]]);
+g.append("g").attr("id", "brush").call(brush);
+let idleTimeout = null;
+function brushended() {
+    const s = d3.event.selection;
+    if (!s) {
+        if (!idleTimeout) return idleTimeout = setTimeout(() => { idleTimeout = null; }, 350);
+
+        xScale.domain([xmin, xmax]); yScale.domain([ymin, ymax]);
+    }
+    else {
+        // xScale.invert: takes a pixel location an maps it to a data location.
+        const newxextent = [xScale.invert(s[0][0]), xScale.invert(s[1][0])];
+        xScale.domain(newxextent);
+        const newyextent = [yScale.invert(s[1][1]), yScale.invert(s[0][1])];
+        yScale.domain(newyextent);
+        svg.select("#brush").call(brush.move);
+    }
+    const trans = svg.transition().duration(750);
+    svg.select("#axis--x").transition(trans).call(xAxis);
+    svg.select("#axis--y").transition(trans).call(yAxis);
+    svg.selectAll(".line").transition(trans).attr("d", line);
+};
+```
+
+See `d3/brushgraph.html`.
+
+---
+
+# d3: Clip paths for brush zoom
+
+```javascript
+g.append("defs").append("clipPath").attr("id", "rectangleClipper")
+ .append("rect").attr("x", 0).attr("y", 0)
+ .attr("width", width).attr("height", height);
+
+g.selectAll("path").data(dataset).enter()
+ .append("path").attr("class", "line")
+ .attr("clip-path", "url(#rectangleClipper)")
+ .attr("d", line);
+```
+
+If we don't have a clip path for the lines, the lines leave the group domain!
 
 ---
 
@@ -444,6 +601,21 @@ g.append("path").datum(dataset).attr("stroke", "steelblue").attr("d", line);
 - [Expert Data Visualization](https://www.packtpub.com/web-development/expert-data-visualization)
 
 ---
+
+## d3: Swap x and y to get vertical graphs
+
+```javascript
+const line = d3.line().curve(d3.curveMonotoneX)
+             .x( d => yScale(d) )
+             .y( (d, i) => xScale(xmin + i*spacing) );
+```
+
+---
+
+![](figures/swapxy.png)
+
+---
+
 
 ## plotly.js
 
