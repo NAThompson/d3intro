@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: black;
+  color: white;
+}
+</style>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<body>
+  <svg width="600" height="400">
+  </svg>
+  <script>
+  const width=600;
+  const height=400;
+  const svg = d3.select("svg").attr("width", width).attr("height", height);
+  const g = svg.append("g");
+  const dataset = [ [-2, 4], [-1, 1], [ 0, 0], [ 1, 1], [ 2, 4] ];
+  const xExtents = d3.extent(dataset, d => d[0]);
+  const yExtents = d3.extent(dataset, d => d[0]);
+  const xScale = d3.scaleLinear().domain(xExtents).range([0, width]);
+  const yScale = d3.scaleLinear().domain(yExtents).range([height, 0]);
+  const line = d3.line().curve(d3.curveMonotoneX)
+                 .x(d => xScale(d[0]))
+                 .y(d => yScale(d[1]));
+
+  g.append("path")
+    .datum(dataset)
+    .attr("stroke", "steelblue")
+    .attr("stroke-width", 3)
+    .attr("d", line);
+</script>
+</body>
+</html>
