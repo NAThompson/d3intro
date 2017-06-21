@@ -616,6 +616,24 @@ const line = d3.line().curve(d3.curveMonotoneX)
 
 ---
 
+## d3: Using FileSaver.js to downloading SVG files
+
+```javascript
+const serializer = new XMLSerializer();
+const svg = document.getElementsByTagName('svg')[0];
+const svgString = serializer.serializeToString(svg);
+const blob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+// FileSaver.js function:
+saveAs(blob, 'lissajous.svg');
+```
+
+See `download_svg.html` for details.
+
+Note how the CSS doesn't show up on the downloaded image.
+
+There are ways around this (traversing the tree and `getComputedStyle`), but we won't go there.
+
+---
 
 ## plotly.js
 
