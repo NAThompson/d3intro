@@ -589,19 +589,6 @@ If we don't have a clip path for the lines, the lines leave the group domain!
 
 ---
 
-
-# d3: references
-
-- [D3.js in Action](https://www.amazon.com/D3-js-Action-Data-visualization-JavaScript/dp/1617294489/)
-
-- [Interactive Data Visualization for the Web](https://www.amazon.com/Interactive-Data-Visualization-Web-Introduction/dp/1491921285/)
-
-- [D3 Tips and Tricks v4.x](https://leanpub.com/d3-t-and-t-v4) (Free!)
-
-- [Expert Data Visualization](https://www.packtpub.com/web-development/expert-data-visualization)
-
----
-
 ## d3: Swap x and y to get vertical graphs
 
 ```javascript
@@ -616,7 +603,7 @@ const line = d3.line().curve(d3.curveMonotoneX)
 
 ---
 
-## d3: Using FileSaver.js to downloading SVG files
+## d3: Using FileSaver.js to download SVG files
 
 ```javascript
 const serializer = new XMLSerializer();
@@ -632,6 +619,60 @@ See `download_svg.html` for details.
 Note how the CSS doesn't show up on the downloaded image.
 
 There are ways around this (traversing the tree and `getComputedStyle`), but we won't go there.
+
+---
+
+# d3: Data parsing
+
+D3 has data parsing utilities; here the first few lines of a tsv file (`some_data.tsv`):
+
+```
+"Energy"	"Total"
+-3.334734331145965e-01	0.000000000000000e+00
+-3.334734331145965e-01	2.799766788484645e-01
+-3.272692886576865e-01	1.013274581462217e+00
+-3.252055487167396e-01	1.700824389771486e+00
+```
+
+---
+
+# d3: Data parsing
+
+The header fields get tokenized! Very cool:
+
+```javascript
+d3.tsv('some_data.tsv', (d) => {
+            console.log(d[0].Energy);
+            console.log(d[0].Total);
+});
+```
+
+---
+
+# d3: Data parsing
+
+Data loading methods are asynchronous, so they return immediately; callbacks are required
+
+```javascript
+d3.tsv('some_data.tsv', useData);
+
+function useData(dataset) {
+    const maxE = d3.max(dataset, d => +d.Energy );
+};
+```
+
+---
+
+# d3: references
+
+- [D3.js in Action](https://www.amazon.com/D3-js-Action-Data-visualization-JavaScript/dp/1617294489/)
+
+- [Interactive Data Visualization for the Web](https://www.amazon.com/Interactive-Data-Visualization-Web-Introduction/dp/1491921285/)
+
+- [D3 Tips and Tricks v4.x](https://leanpub.com/d3-t-and-t-v4) (Free!)
+
+- [Expert Data Visualization](https://www.packtpub.com/web-development/expert-data-visualization)
+
 
 ---
 
