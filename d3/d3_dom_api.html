@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="d3.v4.min.js"></script>
+<style>
+body {
+  background-color: black;
+}
+</style>
+</head>
+<body>
+<svg width="600" height="400"></svg>
+<script>
+var svg = d3.select("svg");
+svg.append("rect")
+   .attr("x", 300)
+   .attr("y", 200)
+   .attr("width", 150)
+   .attr("height", 200)
+   .attr("fill", "orange")
+   .on("mouseover", function(){ d3.select(this).style("fill", "steelblue");})
+   .on("click", function() { d3.select(this).style("fill", "red"); });
+</script>
+</body>
+</html>

@@ -22,6 +22,8 @@ Because SVG specifies pixel locations! It's painful to create graphics this way.
 
 D3.js helps convert your data to reasonable pixel locations.
 
+SVG syntax is also very terse; D3 syntax is more friendly.
+
 ---
 
 ## If you don't understand SVG, you won't understand D3
@@ -37,6 +39,14 @@ Not knowing SVG makes your life miserable when using d3.js.
 d3 is a code generation layer.
 
 If you want abstraction from SVG, expect to be frustrated.
+
+We therefore will start with SVG basics.
+
+---
+
+## What is SVG?
+
+- SVG is a way of specifying 2D vector graphics using XML syntax.
 
 ---
 
@@ -85,21 +95,30 @@ If you want abstraction from SVG, expect to be frustrated.
 </svg>
 ```
 
-This is getting tedious fast!
+(`d3/svg_primitives.html`)
+
+---
+
+![inline](figures/svg_primitives.png)
 
 ---
 
 ## SVG polygon
 
 ```html
-<svg width="200" height="250">
-  <polygon
-  points="50 160, 55 180, 70 180, 60 190, 65 205, 50 195, 35 205, 40 190, 30 180, 45 180"
-  stroke="green" fill="transparent" stroke-width="5"/>
-</svg>
+<polygon points="50 160, 55 180, 70 180, 60 190, 65 205, 50 195, 35 205, 40 190, 30 180, 45 180"
+         stroke="steelblue"
+         fill="orange"
+         stroke-width="1">
 ```
 
 The $$(x, y)$$ coordinates are given as `"x1 y1, x2 y2, ..."`
+
+See `d3/svg_polygon.html`.
+
+---
+
+![inline](figures/svg_polygon.png)
 
 ---
 
@@ -135,8 +154,16 @@ So $$y = 0$$ is the top of the `<svg>`.
 ## SVG text
 
 ```html
-<text x="10" y="10">Hello World!</text>
+<text x="250"
+      y="25" font-family="times"
+      font-size="25"
+      fill="steelblue"
+      transform="rotate(15)">Hello world!</text>
 ```
+
+---
+
+![inline](figures/svg_text.png)
 
 ---
 
@@ -185,12 +212,10 @@ This creates a square half the size of the SVG element, then the group scales it
 ## SVG supports Javascript events
 
 ```html
-<svg width="600" height="400">
-  <circle id="circ" cx="100" cy="100" r="50" fill="steelblue"
+<circle id="circ" cx="100" cy="100" r="50" fill="steelblue"
           onclick="clickfunc()"
           onmouseover="mouseoverfunc()"
           onmouseout="mouseoutfunc()"></circle>
-</svg>
 ```
 
 ```javascript
@@ -204,6 +229,8 @@ const mouseoutfunc = () => {
   document.getElementById("circ").style.fill = "steelblue";
 };
 ```
+
+See `d3/svg_dom_api.html`.
 
 ---
 
@@ -219,21 +246,23 @@ const mouseoutfunc = () => {
         opacity="0.4"></circle>
 ```
 
-These are not legal CSS attributes to style HTML.
+These are not legal CSS attributes to style HTML; they are specific to SVG.
 
 ---
 
 # SVG references
 
 We only need to know a little SVG to be successful with d3.
+
 But of course we can be better if we know more.
-A popular reference is [SVG Animations](https://www.amazon.com/SVG-Animations-Implementations-Responsive-Animation/dp/1491939702)
+
+A popular reference is [SVG Animations](https://www.amazon.com/SVG-Animations-Implementations-Responsive-Animation/dp/1491939702).
 
 ---
 
 # d3 at a glance
 
-- d3 is for programming; you can do a lot.
+- d3 is for programmers; you can do a lot.
 - Learning curve is large.
 - BSD licenced, so you can use it without worry.
 
@@ -246,7 +275,7 @@ Let's build this SVG image with d3.js:
 
 ```html
 <svg width="600" height="400">
-  <rect x="50" y="50" width="60" height="40" fill="green"></rect>
+  <rect x="50" y="50" width="60" height="40" fill="steelblue"></rect>
 </svg>
 ```
 
@@ -264,13 +293,14 @@ Let's build this SVG image with d3.js:
 <script>
 const svg = d3.select("svg");
 svg.append("rect").attr("x", 50).attr("y", 50)
-   .attr("width", 60).attr("height", 100);
+   .attr("width", 60).attr("height", 100).attr("fill", "steelblue");
 </script>
 </body>
 </html>
 ```
 
-(Aside: Note that `const` in javascript only makes the bound pointer immutable; you can still change the subobjects.)
+See `d3/d3_svg_rectangle.html`.
+
 
 ---
 
@@ -282,15 +312,11 @@ const svg = d3.select("svg");
 svg.append("rect").attr("x", 50).attr("y", 50)
    .attr("width", 60).attr("height", 100)
    .attr("fill", "orange")
-   .on("mouseover", () => {
-     console.log(this);
-      d3.select(this).style("fill", "steelblue");})
    .on("mouseout", function() { d3.select(this).style("fill", "orange");})
    .on("click", function() { d3.select(this).style("fill", "red"); });
 ```
 
-Note that if we replace the event functions with arrow functions, the code will not work, as arrow functions as `this` has different meaning in arrow vs. traditional JS functions.
-
+See `d3/d3_dom_api.html`. Examine the generated SVG in the DOM.
 
 ---
 
@@ -355,9 +381,10 @@ svg.selectAll("circle") // There are no circles, so this is an empty selection
    .append("circle")
    .attr("cx", d => d[0])
    .attr("cy", d => d[1])
-   .attr("r", 7)
-   .attr("fill", "orange");
+   .attr("r", 7).attr("fill", "orange");
 ```
+
+See `d3/d3_scatterplot.html`; again examine the DOM to see the generated SVG.
 
 ---
 
@@ -391,10 +418,10 @@ const width = 600; // SVG will be 600px wide
 const dataset = [10, 3, 8, 19];
 const max = d3.max(dataset);
 const min = d3.min(dataset);
-const scale = d3.scaleLinear().domain([min, max]).range([0, width]);
+const scale = d3.scaleLinear()
+                .domain([min, max])
+                .range([0, width]);
 ```
-
-We should probably start using JS standard `Math.max(...dataset)` (it's native code) rather than D3 utilities for finding the max . . .
 
 ---
 
@@ -438,6 +465,8 @@ const line = d3.line().curve(d3.curveMonotoneX)
                .y(d => yScale(d[1]));
 g.append("path").datum(dataset).attr("stroke", "steelblue").attr("d", line);
 ```
+
+See `d3/d3_graph.html`.
 
 ---
 
@@ -597,6 +626,9 @@ const line = d3.line().curve(d3.curveMonotoneX)
              .y( (d, i) => xScale(xmin + i*spacing) );
 ```
 
+See `d3/swappedxy.html`.
+
+
 ---
 
 ![](figures/swapxy.png)
@@ -660,6 +692,8 @@ function useData(dataset) {
     const maxE = d3.max(dataset, d => +d.Energy );
 };
 ```
+
+See `d3/load_data.html`.
 
 ---
 

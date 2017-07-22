@@ -12,7 +12,6 @@ body {
 .axis line {
   fill: none;
   stroke: white;
-  shape-rendering: crispEdges;
 }
 .axis text {
     font-family: sans-serif;
@@ -48,15 +47,15 @@ const yScale = d3.scaleLinear()
                .domain([0, d3.max(dataset, d => d[1])])
                .range([height, 0]);
 
-
-//const xAxis = d3.axisBottom(xScale).ticks(8);
-//const yAxis = d3.axisLeft(yScale).ticks(10)
 const xAxis = d3.axisBottom(xScale)
                 .ticks(8)
                 .tickSize(-height)
                 .tickSizeOuter(0);
 
-const yAxis = d3.axisLeft(yScale).ticks(10).tickSize(-width).tickSizeOuter(0);
+const yAxis = d3.axisLeft(yScale)
+                .ticks(10)
+                .tickSize(-width)
+                .tickSizeOuter(0);
 
 g.selectAll("circle").data(dataset).enter()
  .append("circle")
@@ -65,16 +64,18 @@ g.selectAll("circle").data(dataset).enter()
  .attr("r", 3)
  .attr("fill", "steelblue");
 
+const opacity = 0.5;
 g.append("g")
    .attr("class", "axis")
    .attr("transform", `translate(0, ${height})`)
-   .attr("opacity", 0.15)
+   .attr("stroke", "white")
+   .attr("opacity", opacity)
    .call(xAxis);
 
 g.append("g")
    .attr("class", "axis")
    .attr("transform", `translate(0, 0)`)
-   .attr("opacity", 0.15)
+   .attr("opacity", opacity)
    .call(yAxis);
 
 </script>

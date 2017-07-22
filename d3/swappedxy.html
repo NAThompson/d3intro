@@ -118,45 +118,6 @@ svg.append("text")
    .attr("fill", "white")
    .attr("transform", `translate(${width/2+margin.left}, ${height + margin.top + margin.bottom/2})`)
    .text("x");
-
-svg.append("text")
-   .attr("text-anchor", "middle")
-   .attr("fill", "white")
-   .attr("transform", `translate(${width/2+margin.left}, ${margin.top/2})`)
-   .text("You can brush!");
-
-const brush = d3.brush()
-                .on("end", brushended)
-                .extent([[0,0], [width, height]]);
-
-g.append("g")
- .attr("id", "brush")
- .call(brush);
-
-let idleTimeout = null;
-function brushended() {
-    const s = d3.event.selection;
-    if (!s) {
-        if (!idleTimeout) {
-            return idleTimeout = setTimeout(() => { idleTimeout = null; }, 350);
-        }
-        xScale.domain([xmin, xmax]);
-        yScale.domain([ymin, ymax]);
-    }
-    else {
-        // xScale.invert: takes a pixel location an maps it to a data location.
-        const newxextent = [xScale.invert(s[0][0]), xScale.invert(s[1][0])];
-        xScale.domain(newxextent);
-        const newyextent = [yScale.invert(s[1][1]), yScale.invert(s[0][1])];
-        yScale.domain(newyextent);
-        svg.select("#brush").call(brush.move);
-    }
-    const trans = svg.transition().duration(750);
-    svg.select("#axis--x").transition(trans).call(xAxis);
-    svg.select("#axis--y").transition(trans).call(yAxis);
-    svg.selectAll(".line").transition(trans).attr("d", line);
-};
-
 </script>
 </body>
 </html>

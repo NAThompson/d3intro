@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="d3.v4.min.js"></script>
+<style>
+body {
+  background-color: black;
+}
+</style>
+</head>
+<body>
+<svg id="d3output"></svg>
+</body>
+<script>
+var xmin = -3;
+var spacing = 0.01;
+var arr1 = [];
+var arr2 = [];
+var arr3 = [];
+for (var i = 0; i < 700; ++i)
+{
+    var x = xmin + i*spacing;
+    var y = Math.tanh(x);
+    arr1.push(y + 1);
+    arr2.push(-y - 1);
+    arr3.push(Math.cos(3*x));
+}
+var arr = [arr1, arr2, arr3];
+
+var xmax = xmin + spacing*(arr[0].length - 1);
+var ymin = d3.min(arr, (array) => { return d3.min(array); });
+var ymax = d3.max(arr, (array) => { return d3.max(array); });
+
+const width = window.innerWidth;
+const height = window.innerHeight;
+var svg = d3.select("#d3output").attr("width", width).attr("height", height);
+
+var g = svg.append("g");
+var xscale = d3.scaleLinear().domain([xmin, xmax]).range([0, width]);
+var yscale = d3.scaleLinear().domain([ymin, ymax]).range([height, 0]);
+
+var line = d3.line().curve(d3.curveMonotoneX)
+             .x( (d, i) => { return xscale(xmin + i*spacing); })
+             .y( (d) => { return yscale(d); });
+
+g.selectAll("path")
+ .data(arr)
+ .enter()
+ .append("path")
+ .attr("stroke", "orange")
+ .attr("fill", "none")
+ .attr("stroke-width", "6px")
+ .attr("opacity", 1)
+ .on("mouseover",
+     function() {
+       d3.select(this).transition().duration(1000).attr("stroke", "steelblue");
+     })
+ .on("mouseout",
+     function() { d3.select(this).transition().duration(1000).attr("stroke", "orange"); })
+ .on("click",
+     function() { d3.select(this).transition().duration(500).attr("opacity", 0); })
+ .attr("d", line);
+</script>
+</html>

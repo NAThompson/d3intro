@@ -12,7 +12,6 @@ body {
 .axis line {
   fill: none;
   stroke: white;
-  shape-rendering: crispEdges;
 }
 .axis text {
     font-family: sans-serif;
@@ -38,7 +37,8 @@ const margin = {top: 30, right: 40, bottom: 30, left: 30};
 const width = +svg.attr("width") - margin.left - margin.right;
 const height = +svg.attr("height") - margin.top - margin.bottom;
 // We need an SVG group because we otherwise our data range depends on the margin.
-const g = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+const g = svg.append("g")
+             .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 const xScale = d3.scaleLinear()
                .domain([0, d3.max(dataset, d => d[0])])
@@ -48,13 +48,15 @@ const yScale = d3.scaleLinear()
                .domain([0, d3.max(dataset, d => d[1])])
                .range([height, 0]);
 
-
 const xAxis = d3.axisBottom(xScale)
                 .ticks(8)
                 .tickSize(-height)
                 .tickSizeOuter(0);
 
-const yAxis = d3.axisLeft(yScale).ticks(10).tickSize(-width).tickSizeOuter(0);
+const yAxis = d3.axisLeft(yScale)
+                .ticks(10)
+                .tickSize(-width)
+                .tickSizeOuter(0);
 
 g.selectAll("circle").data(dataset).enter()
  .append("circle")

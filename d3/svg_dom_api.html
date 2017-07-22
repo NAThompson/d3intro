@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: black;
+}
+</style>
+</head>
+<body>
+    <svg width="600" height="400">
+      <circle id="circ" cx="300" cy="200" r="100" fill="steelblue"
+              onclick="clickfunc()"
+              onmouseover="mouseoverfunc()"
+              onmouseout="mouseoutfunc()"></circle>
+    </svg>
+</body>
+<script>
+const clickfunc = () => {
+    document.getElementById("circ").style.fill = "green";
+};
+
+const mouseoverfunc = () => {
+  document.getElementById("circ").style.fill = "red";
+};
+
+const mouseoutfunc = () => {
+  document.getElementById("circ").style.fill= "orange";
+}
+</script>
+</html>
